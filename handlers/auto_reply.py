@@ -49,6 +49,7 @@ async def auto_reply_handler(_, message: types.Message):
 @bot.on_message(filters.me & filters.command(["auto"], ["/", "!"]), group=3)
 async def auto_reply_setting_on_off(_, message: types.Message):
     s = get_settings(bot.me.id)
+    print(s)
     s.auto_reply.is_on = not bool(s.auto_reply.is_on)
 
     text = "✔ Включил автоответчик!" if s.auto_reply.is_on else "❌ Выключил автоответчик!"
