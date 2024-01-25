@@ -18,7 +18,7 @@ def check_cooldown(user_id: int, method: str = "auto", time_cd: int = 20) -> boo
     return False
 
 
-@bot.on_message(filters.private, group=2)
+@bot.on_message(filters.private & ~filters.me, group=2)
 async def auto_reply_handler(_, message: types.Message):
     user = message.from_user
     settings = get_settings(bot.me.id)
