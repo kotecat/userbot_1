@@ -4,7 +4,7 @@ from loader import bot
 from simple_filters import app_admins_filter
 
 
-@bot.on_message(app_admins_filter & ~filters.media & filters.command(["file"], ["/", "!", "."]))
+@bot.on_message(app_admins_filter & ~filters.media & filters.command(["file"], ["/", "!", "."]), group=1)
 async def on_file_command(_, message: types.Message):
     msg = message.reply_to_message or message
 
