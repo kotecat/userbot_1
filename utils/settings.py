@@ -30,7 +30,7 @@ def get_settings(user_id: int) -> Settings:
             return Settings(**json.load(file))
     except FileNotFoundError:
         with open(path, "w", encoding=UTF_8) as file:
-            json.dump(Settings().model_dump(), file, ensure_ascii=False, indent=4)
+            json.dump(json.loads(Settings().json()), file, ensure_ascii=False, indent=4)
             return Settings()
 
 
@@ -40,9 +40,9 @@ def set_settings(user_id: int, new: Settings) -> bool:
 
     try:
         with open(path, "w", encoding=UTF_8) as file:
-            json.dump(new.model_dump(), file, ensure_ascii=False, indent=4)
+            json.dump(json.loads(new.json()), file, ensure_ascii=False, indent=4)
             return True
     except:
         with open(path, "w", encoding=UTF_8) as file:
-            json.dump(old.model_dump(), file, ensure_ascii=False, indent=4)
+            json.dump(json.loads(old.json()), file, ensure_ascii=False, indent=4)
             return False
