@@ -5,7 +5,7 @@ import random
 import re
 
 
-reg = re.compile(r"-?(\d+)\D+-?(\d+)")
+reg = re.compile(r"^(-?\d+).(-?\d+)$")
 reg_2 = re.compile(r"-?(\d+)")
 
 
@@ -20,8 +20,12 @@ async def random_cmd(_, message: types.Message):
     a = 1
     b = 10
 
+    w = ""
+
     if m or m2:
         a = int(m[1])
+    else:
+        w = "<i>Шаблон был не верен!</i>"
     if m:
         b = int(m[2])
 
@@ -32,4 +36,4 @@ async def random_cmd(_, message: types.Message):
         await message.reply("Твои числа равны!")
         return
 
-    await message.reply(f"<b>Число <i>(от {minimum}, до {maximum})</i>: </b> <code>{random.randint(minimum, maximum)}</code>")
+    await message.reply(f"<b>Число <i>(от {minimum}, до {maximum})</i>: </b> <code>{random.randint(minimum, maximum)}</code>\n\n" + w)
