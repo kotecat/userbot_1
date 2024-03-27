@@ -5,7 +5,7 @@ import random
 import re
 
 
-reg = re.compile(r"(\d+)\D+(\d+)")
+reg = re.compile(r"-?(\d+)\D+-?(\d+)")
 
 
 @bot.on_message(filters.me & filters.command(["r", "rand", "random"], ["!", "/", "."]), group=5)
