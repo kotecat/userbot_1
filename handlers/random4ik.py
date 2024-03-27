@@ -5,7 +5,7 @@ import random
 import re
 
 
-reg = re.compile(r"^(-?\d+).(-?\d+)$")
+reg = re.compile(r"^(-?\d+)[ .+*%]+(-?\d+)$")
 reg_2 = re.compile(r"-?(\d+)")
 
 
@@ -17,8 +17,8 @@ async def random_cmd(_, message: types.Message):
     m = re.match(reg, args)
     m2 = re.match(reg_2, args)
 
-    a = 1
-    b = 10
+    a = 10
+    b = 0
 
     w = ""
 
