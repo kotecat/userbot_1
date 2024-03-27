@@ -8,7 +8,7 @@ import re
 reg = re.compile(r"-?(\d+)\D+-?(\d+)")
 
 
-@bot.on_message(filters.me & filters.command(["r", "rand", "random"], ["!", "/", "."]), group=5)
+@bot.on_message(filters.me & filters.command(["r", "ran", "run", "rand", "random"], ["!", "/", "."]), group=5)
 async def random_cmd(_, message: types.Message):
     text = message.text or message.caption or ""
     args = " ".join(text.split()[1:])
