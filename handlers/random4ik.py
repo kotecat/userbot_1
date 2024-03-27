@@ -6,6 +6,7 @@ import re
 
 
 reg = re.compile(r"-?(\d+)\D+-?(\d+)")
+reg_2 = re.compile(r"-?(\d+)")
 
 
 @bot.on_message(filters.me & filters.command(["r", "ran", "run", "rand", "random"], ["!", "/", "."]), group=5)
@@ -14,17 +15,21 @@ async def random_cmd(_, message: types.Message):
     args = " ".join(text.split()[1:])
 
     m = re.match(reg, args)
+    m2 = re.match(reg_2, args)
 
-    if not m:
-        return
+    a = 1
+    b = 10
 
-    a = int(m[1])
-    b = int(m[2])
+    if m or m2:
+        a = int(m[1])
+    if m:
+        b = int(m[2])
 
     minimum = min(a, b)
     maximum = max(a, b)
 
     if minimum == maximum:
+        await message.reply("Твои числа равны!")
         return
 
-    await message.reply(f"<b>Число: </b> <code>{random.randint(minimum, maximum)}</code>")
+    await message.reply(f"<b>Число <i>(от {minimum}, до {maximum})</i>: </b> <code>{random.randint(minimum, maximum)}</code>")
