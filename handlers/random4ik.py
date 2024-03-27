@@ -23,7 +23,7 @@ async def random_cmd(_, message: types.Message):
     w = ""
 
     if m or m2:
-        a = int(m[1])
+        a = int((m or m2)[1])
     else:
         w = "<i>Шаблон был не верен!</i>"
     if m:
