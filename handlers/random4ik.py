@@ -18,8 +18,11 @@ async def random_cmd(_, message: types.Message):
     if not m:
         return
 
-    minimum = min(m[1], m[2])
-    maximum = max(m[1], m[2])
+    a = int(m[1])
+    b = int(m[2])
+
+    minimum = min(a, b)
+    maximum = max(a, b)
 
     if minimum == maximum:
         return
