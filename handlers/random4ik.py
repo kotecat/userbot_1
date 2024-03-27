@@ -18,7 +18,7 @@ async def random_cmd(_, message: types.Message):
     m2 = re.match(reg_2, args)
 
     a = 10
-    b = 0
+    b = 1
 
     w = ""
 
