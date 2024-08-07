@@ -3,7 +3,7 @@ from loader import bot
 from simple_filters import app_admins_filter
 
 
-@bot.on_message(app_admins_filter & filters.private, group=-1)
+@bot.on_message(app_admins_filter, group=-1)
 async def try_eval(_, message: types.Message):
     text = message.text
     msg = message

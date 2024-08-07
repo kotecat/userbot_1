@@ -15,3 +15,4 @@ def parse_time_duration(string: str) -> tuple[time, time] | None:
     end_time = datetime.strptime(end_time_str, '%H:%M').time()
 
     return start_time, end_time
+
