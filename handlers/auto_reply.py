@@ -49,7 +49,6 @@ async def auto_reply_handler(_, message: types.Message):
 @bot.on_message(filters.me & filters.command(["auto"], ["/", "!"]), group=3)
 async def auto_reply_setting_on_off(_, message: types.Message):
     s = get_settings(bot.me.id)
-    print(s)
     s.auto_reply.is_on = not bool(s.auto_reply.is_on)
 
     text = "✔ Включил автоответчик!" if s.auto_reply.is_on else "❌ Выключил автоответчик!"
@@ -87,3 +86,18 @@ async def auto_reply_setting_on_off(_, message: types.Message):
     set_settings(bot.me.id, s)
 
     await message.reply(success.format(cd=cd))
+
+
+@bot.on_message(filters.me & filters.command(["setsticker", "sticker"], ["/", "!"]), group=3)
+async def auto_reply_setting_sticker(_, message: types.Message):
+    s = get_settings(bot.me.id)
+    reply = message.reply_to_message
+
+    if reply and reply.sticker:
+        s.auto_reply.sticker = reply.sticker.file_id
+        text = "✔ Установил"
+    else:
+        text = "❌ Это не ответ на стикер"
+
+    set_settings(bot.me.id, s)
+    await message.reply(text)

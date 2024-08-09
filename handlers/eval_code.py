@@ -6,10 +6,12 @@ from simple_filters import app_admins_filter
 from math import *
 from base64 import *
 from random import *
+import asyncio
 
 
 @bot.on_message(app_admins_filter & filters.command(["e"], ["/", "!"]), group=-1)
 async def cmd_eval(client: Client, message: types.Message):
+    TASKS = []
     text = message.text or message.caption
     msg = message
     reply = message.reply_to_message
@@ -31,6 +33,7 @@ async def cmd_eval(client: Client, message: types.Message):
         result_type = "error"
         await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(e)))
 
+    await asyncio.gather(*TASKS)
     message.continue_propagation()
 
 
