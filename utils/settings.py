@@ -11,6 +11,7 @@ class AutoReplyPrivateMode(str, Enum):
     TIME = "time"
     FOREVER = "forever"
 
+
 class SettingsAutoReplyPrivate(BaseModel):
     mode: Optional[AutoReplyPrivateMode] = AutoReplyPrivateMode.FOREVER
     time_start: Optional[str] = "2:00"
@@ -19,8 +20,14 @@ class SettingsAutoReplyPrivate(BaseModel):
     cooldown: Optional[int] = 300
     is_on: Optional[bool] = True
 
+
+class SettingsRestorerMessage(BaseModel):
+    enable: Optional[bool] = True
+
+
 class Settings(BaseModel):
     auto_reply: Optional[SettingsAutoReplyPrivate] = SettingsAutoReplyPrivate()
+    restorer: Optional[SettingsRestorerMessage] = SettingsRestorerMessage()
 
 
 def get_settings(user_id: int) -> Settings:
