@@ -212,14 +212,15 @@ def handler_delete_message(chat_id: int, message_id: int):
 @bot.on_message(group=777)
 async def logger_messages(client: Client, message: types.Message):
     user_id = handler_user(message)
-    if message.chat.type not in {enums.ChatType.PRIVATE, enums.ChatType.BOT}:
-        handler_chat(message)
-    if message.chat.type in {
-        enums.ChatType.GROUP,
-        enums.ChatType.SUPERGROUP,
-        enums.ChatType.CHANNEL
-    }:
-        handler_message(message, user_id)
+    # if message.chat.type not in {enums.ChatType.PRIVATE, enums.ChatType.BOT}:
+    handler_chat(message)
+
+    # if message.chat.type in {
+    #     enums.ChatType.GROUP,
+    #     enums.ChatType.SUPERGROUP,
+    #     enums.ChatType.CHANNEL
+    # }:
+    handler_message(message, user_id)
 
 
 @bot.on_deleted_messages()
