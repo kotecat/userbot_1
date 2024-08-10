@@ -306,7 +306,11 @@ async def str_with_file(data: str, chat_id: int):
     async with sm:
         with open("data.txt", "w+", encoding="utf-8") as file:
             file.write(data)
-        await bot.send_document(chat_id, document="data.txt")
+
+        try:
+            await bot.send_document(chat_id, document="data.txt")
+        except ValueError:
+            await bot.send_message(chat_id, "<b>Пусто</b>")
         await m.delete()
 
 
