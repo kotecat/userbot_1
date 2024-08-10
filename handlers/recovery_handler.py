@@ -17,7 +17,6 @@ from pony.orm import (
     raw_sql
 )
 
-
 Parsed: TypeAlias = Tuple[bool, int, int | None]
 access_filter = ~filters.media & filters.private & filters.me
 
@@ -50,10 +49,10 @@ class Messages(db.Entity):
     text = Optional(str, 4096)
     media_type = Optional(str, 16)
     media_id = Optional(str, 128)
-    chat = Required(Chats, column="chat_id")
+    chat: Chats = Required(Chats, column="chat_id")
     is_deleted = Required(bool, default=True)
     time = Required(float)
-    user = Required(Users, column="user_id")
+    user: Users = Required(Users, column="user_id")
     is_edited = Required(bool, default=False)
 
 
@@ -137,7 +136,9 @@ def handler_message(message: types.Message, user_id: int, is_edit: bool = False)
     chat_id = message.chat.id
     is_deleted = False
     time_data = round((message.edit_date if is_edit else message.date).timestamp(), 4)
-    print(time_data, is_edit)
+
+    if user_id == chat_id:
+        return
 
     if message.sticker:
         media_type = "sticker"
@@ -212,14 +213,7 @@ def handler_delete_message(chat_id: int, message_id: int):
 @bot.on_message(group=777)
 async def logger_messages(client: Client, message: types.Message):
     user_id = handler_user(message)
-    # if message.chat.type not in {enums.ChatType.PRIVATE, enums.ChatType.BOT}:
     handler_chat(message)
-
-    # if message.chat.type in {
-    #     enums.ChatType.GROUP,
-    #     enums.ChatType.SUPERGROUP,
-    #     enums.ChatType.CHANNEL
-    # }:
     handler_message(message, user_id)
 
 
@@ -259,7 +253,7 @@ def parse_message_ids(text: str) -> Parsed | None:
 
 
 @db_session
-def get_messages_user(parsed: Parsed) -> List[Messages]:
+def get_messages_user(parsed: Parsed) -> str:
     deleted = parsed[0]
     user_id = parsed[1]
     chat_id = parsed[2]
@@ -267,16 +261,16 @@ def get_messages_user(parsed: Parsed) -> List[Messages]:
     if chat_id:
         messages = list(select(m for m in Messages if
                                m.is_edited == False and m.user.id == user_id and m.chat.id == chat_id and (
-                                           m.is_deleted == True or m.is_deleted == deleted)))
+                                       m.is_deleted == True or m.is_deleted == deleted)))
     else:
         messages = list(select(m for m in Messages if m.is_edited == False and m.user.id == user_id and (
-                    m.is_deleted == True or m.is_deleted == deleted)))
+                m.is_deleted == True or m.is_deleted == deleted)))
 
-    return messages
+    return "\n".join(map(lambda msg: format_message_obj(msg, display_chat=True, display_user=False), messages))
 
 
 @db_session
-def get_messages_chat(parsed: Parsed) -> List[Messages]:
+def get_messages_chat(parsed: Parsed) -> str:
     deleted = parsed[0]
     chat_id = parsed[1]
     user_id = parsed[2]
@@ -284,12 +278,12 @@ def get_messages_chat(parsed: Parsed) -> List[Messages]:
     if user_id:
         messages = list(select(m for m in Messages if
                                m.is_edited == False and m.chat.id == chat_id and m.user.id == user_id and (
-                                           m.is_deleted == True or m.is_deleted == deleted)))
+                                       m.is_deleted == True or m.is_deleted == deleted)))
     else:
         messages = list(select(m for m in Messages if m.is_edited == False and m.chat.id == chat_id and (
-                    m.is_deleted == True or m.is_deleted == deleted)))
+                m.is_deleted == True or m.is_deleted == deleted)))
 
-    return messages
+    return "\n".join(map(lambda msg: format_message_obj(msg, display_chat=False, display_user=True), messages))
 
 
 @db_session
@@ -316,6 +310,32 @@ async def str_with_file(data: str, chat_id: int):
         await m.delete()
 
 
+# @db_session
+def format_message_obj(m: Messages, display_chat: bool, display_user: bool) -> str:
+    result = ""
+    if display_chat:
+        result += f"{' ' * (14 - len(str(m.chat.id)))}[{m.chat.id}] {m.chat.title}"
+    if display_user:
+        full_name = m.user.first_name
+        if m.user.last_name:
+            full_name += f" {m.user.last_name}"
+
+        result += f"[{m.user.id}] {full_name}"
+    if m.is_deleted:
+        result += " [DEL]"
+
+    result += ": "
+
+    if m.text:
+        result += f"{m.text}"
+    if m.media_type:
+        if m.text:
+            result += " | "
+        result += f"type={m.media_type} file={m.media_id}"
+
+    return result
+
+
 @bot.on_message(filters.command(["user"], [".", "/", "!"]) & access_filter)
 async def get_data_user(client: Client, message: types.Message):
     text = message.text
@@ -330,13 +350,13 @@ async def get_data_user(client: Client, message: types.Message):
     list_messages = get_messages_user(parsed)
 
     await str_with_file(
-        "\n".join(map(lambda msg: f"{msg.chat.id=} | {msg.is_deleted=} : {msg.text}", list_messages)),
+        list_messages,
         message.chat.id
     )
 
 
 @bot.on_message(filters.command(["chat"], [".", "/", "!"]) & access_filter)
-async def get_data_user(client: Client, message: types.Message):
+async def get_data_chat(client: Client, message: types.Message):
     text = message.text
     parsed = parse_message_ids(text)
 
@@ -349,6 +369,6 @@ async def get_data_user(client: Client, message: types.Message):
     list_messages = get_messages_chat(parsed)
 
     await str_with_file(
-        ("\n".join(map(lambda msg: f"{msg.user.id=} | {msg.is_deleted=} : {msg.text}", list_messages))),
+        list_messages,
         message.chat.id
     )

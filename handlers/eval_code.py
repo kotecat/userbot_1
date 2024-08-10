@@ -7,48 +7,68 @@ from math import *
 from base64 import *
 from random import *
 import asyncio
+import datetime
+
+
+template = "> <code>{text}</code>\n- - - - - - = (<b>{result_type}</b>) = - - - - - -\n<pre>{result_body}</pre>"
 
 
 @bot.on_message(app_admins_filter & filters.command(["e"], ["/", "!"]), group=-1)
 async def cmd_eval(client: Client, message: types.Message):
-    TASKS = []
     text = message.text or message.caption
-    msg = message
-    reply = message.reply_to_message
+    m = msg = message
+    r = reply = message.reply_to_message
     me = client.me
-
-    template = "{text}\n<b>{result_type}</b>: <code>{result_body}</code>"
 
     if not text:
         return
     if len(text.split(" ")) <= 1:
         return
 
-    text = " ".join(text.split(" ")[1:])
+    text_for_eval = " ".join(text.split(" ")[1:])
 
     try:
-        result_type = "result"
-        await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(eval(text))))
+        try:
+            result_type = "result"
+            eval_result = asyncio.create_task(eval(text_for_eval, globals(), locals()))
+            await eval_result
+            result = eval_result.result()
+            await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(result)))
+
+        except SyntaxError as e:
+            result_type = "result"
+            t = asyncio.create_task(exec(text_for_eval, globals(), locals()))
+            await t
+            result = t.result()
+            await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(result)))
+
     except Exception as e:
         result_type = "error"
         await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(e)))
 
-    await asyncio.gather(*TASKS)
     message.continue_propagation()
 
 
 @bot.on_message(app_admins_filter, group=-2)
 async def try_eval(client: Client, message: types.Message):
     text = message.text
-    msg = message
-    reply = message.reply_to_message
+    m = msg = message
+    r = reply = message.reply_to_message
     me = client.me
 
+    text_for_eval = text
+
     try:
-        result = eval(text)
+        try:
+            eval_result = eval(text_for_eval, globals(), locals())
+        except Exception as e:
+            pass
+        else:
+            result_type = "result"
+            await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(eval_result)))
+
     except Exception as e:
-        pass
-    else:
-        await message.edit_text(f"{text}\n<b>result</b>: <code>{result}</code>")
+        result_type = "error"
+        await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(e)))
 
     message.continue_propagation()
