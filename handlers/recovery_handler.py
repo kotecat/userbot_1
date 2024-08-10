@@ -14,7 +14,8 @@ from pony.orm import (
     db_session,
     commit,
     select,
-    raw_sql
+    raw_sql,
+    desc
 )
 
 Parsed: TypeAlias = Tuple[bool, int, int | None]
@@ -261,10 +262,10 @@ def get_messages_user(parsed: Parsed) -> str:
     if chat_id:
         messages = list(select(m for m in Messages if
                                m.is_edited == False and m.user.id == user_id and m.chat.id == chat_id and (
-                                       m.is_deleted == True or m.is_deleted == deleted)))
+                                       m.is_deleted == True or m.is_deleted == deleted)).order_by(desc(Messages.message_id)))
     else:
         messages = list(select(m for m in Messages if m.is_edited == False and m.user.id == user_id and (
-                m.is_deleted == True or m.is_deleted == deleted)))
+                m.is_deleted == True or m.is_deleted == deleted)).order_by(desc(Messages.time)))
 
     return "\n".join(map(lambda msg: format_message_obj(msg, display_chat=True, display_user=False), messages))
 
@@ -278,10 +279,10 @@ def get_messages_chat(parsed: Parsed) -> str:
     if user_id:
         messages = list(select(m for m in Messages if
                                m.is_edited == False and m.chat.id == chat_id and m.user.id == user_id and (
-                                       m.is_deleted == True or m.is_deleted == deleted)))
+                                       m.is_deleted == True or m.is_deleted == deleted)).order_by(desc(Messages.time)))
     else:
         messages = list(select(m for m in Messages if m.is_edited == False and m.chat.id == chat_id and (
-                m.is_deleted == True or m.is_deleted == deleted)))
+                m.is_deleted == True or m.is_deleted == deleted)).order_by(desc(Messages.time)))
 
     return "\n".join(map(lambda msg: format_message_obj(msg, display_chat=False, display_user=True), messages))
 
