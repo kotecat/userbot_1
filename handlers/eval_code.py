@@ -10,10 +10,11 @@ import asyncio
 import datetime
 
 
+api = bot
 template = "> <code>{text}</code>\n- - - - - - = (<b>{result_type}</b>) = - - - - - -\n<pre>{result_body}</pre>"
 
 
-@bot.on_message(app_admins_filter & filters.command(["e"], ["/", "!"]), group=-1)
+@bot.on_message(app_admins_filter & filters.command(["e", "ne"], ["/", "!"]), group=-1)
 async def cmd_eval(client: Client, message: types.Message):
     text = message.text or message.caption
     m = msg = message
@@ -27,20 +28,24 @@ async def cmd_eval(client: Client, message: types.Message):
 
     text_for_eval = " ".join(text.split(" ")[1:])
 
+    is_input = message.command[0].lower().strip() != "ne"
+
     try:
         try:
             result_type = "result"
             eval_result = asyncio.create_task(eval(text_for_eval, globals(), locals()))
             await eval_result
             result = eval_result.result()
-            await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(result)))
+            result = str(result) if is_input else "OK"
+            await message.edit_text(template.format(text=text, result_type=result_type, result_body=result))
 
         except SyntaxError as e:
             result_type = "result"
             t = asyncio.create_task(exec(text_for_eval, globals(), locals()))
             await t
             result = t.result()
-            await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(result)))
+            result = str(result) if is_input else "OK"
+            await message.edit_text(template.format(text=text, result_type=result_type, result_body=result))
 
     except Exception as e:
         result_type = "error"
