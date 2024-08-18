@@ -363,7 +363,6 @@ async def get_data_user(client: Client, message: types.Message):
 @bot.on_message(filters.command(["chat"], [".", "/", "!"]) & access_filter)
 async def get_data_chat(client: Client, message: types.Message):
     text = message.text
-    message.reply()
     parsed = parse_message_ids(text)
 
     if parsed is None:
