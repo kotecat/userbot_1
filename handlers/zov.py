@@ -29,7 +29,7 @@ async def on_ze_command(_, message: types.Message):
 
 
 @bot.on_message(app_admins_filter & ~filters.media & filters.command(["zd"], ["/", "!", "."]), group=10)
-async def on_ze_command(_, message: types.Message):
+async def on_zd_command(_, message: types.Message):
     if len(message.command) == 1:
         await message.delete()
 

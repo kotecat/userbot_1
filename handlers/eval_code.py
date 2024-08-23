@@ -18,7 +18,7 @@ template_search = "> <code>{text}</code>\n- - - - - - = (<b>{result_type}</b>) =
 CORO_WARN = """a coroutine was expected, got"""
 
 
-@bot.on_message(app_admins_filter & filters.command(["s", "sf", "fs"], ["/", "!"]), group=-1)
+@bot.on_message(app_admins_filter & filters.command(["s"], ["/", "!"]), group=-1)
 async def obj_parser(client: Client, message: types.Message):
     text = message.text or message.caption or ""
 
@@ -29,12 +29,16 @@ async def obj_parser(client: Client, message: types.Message):
 
     try:
         try:
+            flags = set("f")
+
             if len(message.command) == 2:
                 obj = message.command[-1]
                 query = ""
             elif len(message.command) >= 3:
                 obj = message.command[-2]
                 query = message.command[-1]
+                if len(message.command) >= 4:
+                    flags = set(message.command[1])
             else:
                 raise ValueError("try /s obj query")
 
@@ -46,14 +50,16 @@ async def obj_parser(client: Client, message: types.Message):
         result = []
         query = query.lower()
         for attr in attrs:
-            if not message.command[0] in ["fs", "sf"] and attr.startswith("__"):
+            if "f" not in flags and attr.startswith("__"):
                 continue
 
-            start_index = attr.lower().find(query)
+            a = attr if "i" not in flags else attr.lower()
+
+            start_index = a.find(query)
             if start_index == -1:
                 continue
 
-            original_attr_match = attr[start_index:start_index+len(query)]
+            original_attr_match = attr[start_index:start_index + len(query)]
             result.append("• " + attr.replace(
                 original_attr_match,
                 f"<b>{original_attr_match}</b>",
