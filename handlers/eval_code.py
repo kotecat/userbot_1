@@ -18,6 +18,57 @@ template_search = "> <code>{text}</code>\n- - - - - - = (<b>{result_type}</b>) =
 CORO_WARN = """a coroutine was expected, got"""
 
 
+@bot.on_message(app_admins_filter & filters.command(["s", "sf", "fs"], ["/", "!"]), group=-1)
+async def obj_parser(client: Client, message: types.Message):
+    text = message.text or message.caption or ""
+
+    text = message.text or message.caption
+    m = msg = message
+    r = reply = message.reply_to_message
+    me = client.me
+
+    try:
+        try:
+            if len(message.command) == 2:
+                obj = message.command[-1]
+                query = ""
+            elif len(message.command) >= 3:
+                obj = message.command[-2]
+                query = message.command[-1]
+            else:
+                raise ValueError("try /s obj query")
+
+            attrs: List[str] = eval(f"dir({obj})", globals(), locals())
+        except Exception as e:
+            await message.edit_text(template.format(text=text, result_type="error", result_body=str(e)))
+            return
+
+        result = []
+        query = query.lower()
+        for attr in attrs:
+            if not message.command[0] in ["fs", "sf"] and attr.startswith("__"):
+                continue
+
+            start_index = attr.lower().find(query)
+            if start_index == -1:
+                continue
+
+            original_attr_match = attr[start_index:start_index+len(query)]
+            result.append("• " + attr.replace(
+                original_attr_match,
+                f"<b>{original_attr_match}</b>",
+                1
+            ))
+
+        r = template_search.format(text=text, result_type="result", result_body="\n" + "\n".join(result))
+        if len(r) >= 4090:
+            r = r[:4090] + "..." + r[4093:4096]
+        await message.edit_text(r)
+
+    except Exception as e:
+        await message.edit_text(template.format(text=text, result_type="error", result_body=str(e)))
+
+
 @bot.on_message(app_admins_filter & filters.command(["e", "ne"], ["/", "!"]), group=-1)
 async def cmd_eval(client: Client, message: types.Message):
     text = message.text or message.caption
@@ -66,51 +117,6 @@ async def cmd_eval(client: Client, message: types.Message):
         await message.edit_text(template.format(text=text, result_type=result_type, result_body=str(e)[:1024]))
 
     message.continue_propagation()
-
-
-@bot.on_message(app_admins_filter & filters.command(["s"], ["/", "!"]), group=-1)
-async def obj_parser(client: Client, message: types.Message):
-    text = message.text or message.caption or ""
-
-    text = message.text or message.caption
-    m = msg = message
-    r = reply = message.reply_to_message
-    me = client.me
-
-    try:
-        try:
-            if len(message.command) == 2:
-                obj = message.command[-1]
-                query = ""
-            elif len(message.command) >= 3:
-                obj = message.command[-2]
-                query = message.command[-1]
-            else:
-                raise ValueError("try /s obj query")
-
-            attrs: List[str] = eval(f"dir({obj})", globals(), locals())
-        except Exception as e:
-            await message.edit_text(template.format(text=text, result_type="error", result_body=str(e)))
-            return
-
-        result = []
-        query = query.lower()
-        for attr in attrs:
-            start_index = attr.lower().find(query)
-            if start_index == -1:
-                continue
-
-            original_attr_match = attr[start_index:start_index+len(query)]
-            result.append("• " + attr.replace(
-                original_attr_match,
-                f"<b>{original_attr_match}</b>",
-                1
-            ))
-
-        await message.edit_text(template_search.format(text=text, result_type="result", result_body="\n" + "\n".join(result)))
-
-    except Exception as e:
-        await message.edit_text(template.format(text=text, result_type="error", result_body=str(e)))
 
 
 @bot.on_message(app_admins_filter, group=-2)
