@@ -94,15 +94,18 @@ async def obj_parser(client: Client, message: types.Message):
             return
 
         result = []
+        query = query.lower()
         for attr in attrs:
-            if attr.startswith("__"):
+            start_index = attr.lower().find(query)
+            if start_index == -1:
                 continue
-            if query in attr:
-                result.append("• " + attr.replace(
-                    query,
-                    f"<b>{query}</b>",
-                    1
-                ))
+
+            original_attr_match = attr[start_index:start_index+len(query)]
+            result.append("• " + attr.replace(
+                original_attr_match,
+                f"<b>{original_attr_match}</b>",
+                1
+            ))
 
         await message.edit_text(template_search.format(text=text, result_type="result", result_body="\n" + "\n".join(result)))
 
