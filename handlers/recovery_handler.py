@@ -65,17 +65,23 @@ db.generate_mapping(create_tables=True)
 def handler_user(message: types.Message):
     sender = message.sender_chat
     user_tg = message.from_user
+    chat = message.chat
 
     if sender:
         user_id = sender.id
         first_name = sender.title
         last_name = ""
         username = sender.username or ""
-    else:
+    elif user_tg:
         user_id = user_tg.id
         first_name = user_tg.first_name
         last_name = user_tg.last_name or ""
         username = user_tg.username or ""
+    else:
+        user_id = chat.id
+        first_name = chat.title
+        last_name = ""
+        username = chat.username or ""
 
     users = list(select(u for u in Users if u.id == user_id))
 
